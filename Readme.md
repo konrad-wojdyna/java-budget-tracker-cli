@@ -2,7 +2,7 @@
 
 > A feature-rich command-line budget tracking application demonstrating **Core Java** proficiency, **OOP principles**, and **clean code practices**.
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)]()
 
 ## 📋 Project Overview
