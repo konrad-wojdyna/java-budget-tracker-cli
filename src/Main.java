@@ -85,6 +85,10 @@ public class Main {
                    break;
 
                case 10:
+                   displayCategoryStatistics();
+                   break;
+
+               case 11:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
@@ -118,7 +122,8 @@ public class Main {
         System.out.println("7. 📋 Display Expensive items");
         System.out.println("8. ⚠ Clear all expenses");
         System.out.println("9. ⚡ Display Expenses by priority");
-        System.out.println("10. 🚪 Exit");
+        System.out.println("10. ⚡ Display category statistics");
+        System.out.println("11. 🚪 Exit");
 
     }
 
@@ -437,6 +442,33 @@ public class Main {
         }catch (IllegalArgumentException e){
             System.out.println("Error: " + e.getMessage());
         }
+    }
+
+    private static void displayCategoryStatistics(){
+        System.out.println("\n=== Category Statistics ===");
+        System.out.println("───────────────────────────────────────");
+
+        Category[] categories = Category.values();
+        boolean hasAny = false;
+
+        for(Category category : categories){
+          ArrayList<Expense> expensesByCategory = manager.findByCategory(category);
+
+          if(!expensesByCategory.isEmpty()){
+              hasAny = true;
+          double total = manager.getTotalByCategory(category);
+              System.out.printf("%s: %d expenses | %.2f PLN%n",
+                      category.getLabel(),  // ← with icon!
+                      expensesByCategory.size(),
+                      total);
+          }
+        }
+
+        if(!hasAny){
+            System.out.println("No expenses in any category yet.");
+        }
+
+        System.out.println("───────────────────────────────────────");
     }
 
 
