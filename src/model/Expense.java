@@ -15,17 +15,19 @@ public class Expense {
     private double amount;
     private String category;
     private String date;
+    private String description;
 
     /**
      * Constructs a new Expense with specified details.
      *
-     * @param name the expense name/description
+     * @param name the expense name
      * @param amount the expense amount (must be positive)
      * @param category the expense category
      * @param date the expense date in YYYY-MM-DD format
+     * @param description the expense description
      * @throws IllegalArgumentException if amount is negative
      */
-    public Expense(String name, double amount, String category, String date){
+    public Expense(String name, double amount, String category, String date, String description){
         if(amount < 0){
             throw new IllegalArgumentException("Amount canot be negative: " + amount);
         }
@@ -38,6 +40,11 @@ public class Expense {
         this.amount = amount;
         this.category = category;
         this.date = date;
+        this.description = description;
+    }
+
+    public Expense(String name, double amount, String category, String date){
+        this(name, amount, category, date, "");
     }
 
     public String getName() {
@@ -56,6 +63,10 @@ public class Expense {
         return date;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public void setAmount(double amount) {
         if(amount < 0){
             throw new IllegalArgumentException("Amount cannot be negative: " + amount);
@@ -64,11 +75,15 @@ public class Expense {
     }
 
     public void displayInfo(){
-        System.out.printf("%s: %s - %.2f PLN (Date: %s)%n",
-                category, name, amount, date);
+        System.out.printf("%s: %s - %.2f PLN (Date: %s)%n %s:",
+                category, name, amount, date, description);
     }
 
     public boolean isExpensive() {
         return amount > 500;
+    }
+
+    public boolean isFromMonth(String month){
+        return this.date.startsWith(month);
     }
 }

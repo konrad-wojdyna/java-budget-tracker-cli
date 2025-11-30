@@ -26,9 +26,10 @@ public class Main {
     private static void textExpenseClass(){
         System.out.println("=== Testing Expense Class ===\n");
 
-        Expense groceries = new Expense("Weekly Groceries", 450.50, "Food", "2025-01-15");
-        Expense transport = new Expense("Monthly Bus Pass", 120.00, "Transport", "2025-01-01");
-        Expense laptop = new Expense("Work Laptop", 3500.00, "Electronics", "2025-01-10");
+        Expense groceries = new Expense("Weekly Groceries", 450.50, "Food", "2025-01-15", "Weekly shopp at Dino");
+        Expense transport = new Expense("Monthly Bus Pass", 120.00, "Transport", "2025-01-01", "Monthly pass");
+        Expense laptop = new Expense("Work Laptop", 3500.00, "Electronics", "2025-01-10", "Laptop for work");
+        Expense testWithoutDesc = new Expense("Bus", 120, "Transport", "2025-01-20");
 
         // Display expenses
         System.out.println("Created expenses:");
@@ -62,11 +63,16 @@ public class Main {
 
         System.out.println();
 
+        //Test isFromMonth
+        System.out.println("=== Testing isFromMonth ===");
+        System.out.println(groceries.isFromMonth("2025-01-15"));
+        System.out.println(groceries.isFromMonth("2025-04-12"));
+
         // Test validation (this will throw exception)
         System.out.println("=== Testing Validation ===");
 
         try {
-            Expense invalid = new Expense("Invalid", -100, "Food", "2025-01-15");
+            Expense invalid = new Expense("Invalid", -100, "Food", "2025-01-15", "Invalid desc");
         } catch (IllegalArgumentException e) {
             System.out.println("✓ Validation works! Error caught: " + e.getMessage());
         }
