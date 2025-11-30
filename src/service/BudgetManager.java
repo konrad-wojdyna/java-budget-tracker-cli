@@ -5,7 +5,7 @@ import model.Expense;
 import java.util.ArrayList;
 
 /**
- * Mamages a collection of expenses with CRUD operations.
+ * Manages a collection of expenses with CRUD operations.
  *
  * This service class provides business logic for expense management
  * including adding, removing, displaying, and calculation statistics.
@@ -54,7 +54,7 @@ public class BudgetManager {
 
         System.out.println("\n=== All Expenses ===");
         for(int i=0; i<expenses.size(); i++){
-            System.out.println((i + 1) + ". ");
+            System.out.print((i + 1) + ". ");
             expenses.get(i).displayInfo();
         }
     }
@@ -131,5 +131,89 @@ public class BudgetManager {
     public void clearAllExpenses(){
         expenses.clear();
         System.out.println("All expenses cleared");
+    }
+
+    /**
+     * Find all expenses by category name
+     *
+     * @param category expense category name, cannot be null
+     * @throws IllegalArgumentException if category name is null
+     * @return ArrayList with Expenses by category name
+     */
+    public ArrayList<Expense> findByCategory(String category){
+
+        if(category == null){
+            throw new IllegalArgumentException("Provide category name!");
+        }
+
+        ArrayList<Expense> expensesByCategory = new ArrayList<>();
+
+        for(Expense expense : expenses){
+            if(expense.getCategory().equals(category)){
+                expensesByCategory.add(expense);
+            }
+        }
+
+        return  expensesByCategory;
+    }
+
+    /**
+     * Calculates total amount for specified category.
+     *
+     * @param category the category to calculate
+     * @return total amount in PLN for that category
+     */
+    public double getTotalByCategory(String category){
+        if(category == null){
+            throw new IllegalArgumentException("Provide category name!");
+        }
+
+        ArrayList<Expense> expensesByCategory = findByCategory(category);
+        double total = 0;
+
+        for(Expense expense : expensesByCategory){
+            total += expense.getAmount();
+        }
+
+        return total;
+    }
+
+    /**
+     * Removes expense at specified index.
+     *
+     * @param index the index of expense to remove (0-based)
+     * @throws IndexOutOfBoundsException if index is invalid
+     */
+    public void  removeExpense(int index){
+         if(index < 0 || index >= expenses.size()){
+             throw new IndexOutOfBoundsException("Invalid index");
+         }
+
+         expenses.remove(index);
+        System.out.println("Expense with index: " + index + " removed.");
+    }
+
+    /**
+     * Finds all expenses above specified amount.
+     *
+     * @param amount the minimum threshold
+     * @throws IllegalArgumentException amount cannot be negative
+     * @return ArrayList of expenses with amount > threshold
+     */
+    public ArrayList<Expense> findExpensesAbove(double amount){
+
+        if(amount < 0){
+            throw new IllegalArgumentException("Amount must be positive!");
+        }
+
+        ArrayList<Expense> expensesAboveAmount = new ArrayList<>();
+
+        for(Expense expense : expenses){
+            if(expense.getAmount() >= amount){
+                expensesAboveAmount.add(expense);
+            }
+        }
+
+        return  expensesAboveAmount;
     }
 }

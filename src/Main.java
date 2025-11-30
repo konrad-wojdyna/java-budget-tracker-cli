@@ -1,6 +1,8 @@
 import model.Expense;
 import service.BudgetManager;
 
+import java.util.ArrayList;
+
 /**
  * Budget Tracker CLI - Main Entry Point
  *
@@ -72,9 +74,37 @@ public class Main {
         }
 
         System.out.println();
+
+        System.out.println("=== Test find by category ===");
+        ArrayList<Expense> foodExpenses = manager.findByCategory("Food");
+        System.out.println("Food expenses: " + foodExpenses.size());
+        for(Expense expense : foodExpenses){
+            expense.displayInfo();
+        }
+
+        System.out.println();
+
+        System.out.println("=== Test calculate total by category ===");
+        double foodTotal = manager.getTotalByCategory("Food");
+        System.out.println("Food total: " + String.format("%.2f", foodTotal) + " PLN");
+
+        System.out.println();
+
+        System.out.println("=== Test remove expense by index ===");
+        System.out.println("Before remove: " + manager.getExpenseCount());
+        manager.removeExpense(2);
+        System.out.println("After remove: " + manager.getExpenseCount());
+        manager.displayAllExpenses();
+
+        System.out.println();
+
+        System.out.println("=== Test expense above amount ===");
+        ArrayList<Expense> expensive = manager.findExpensesAbove(100);
+        System.out.println("Expenses above 100 PLN: " + expensive.size());
+
+
+        System.out.println();
         System.out.println("✅ All tests passed!");
     }
-
-
 }
 
