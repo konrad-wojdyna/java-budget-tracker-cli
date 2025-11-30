@@ -2,6 +2,7 @@ import model.Expense;
 import service.BudgetManager;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 /**
@@ -16,7 +17,7 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static Scanner scanner = new Scanner(System.in);
+    private static Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
     private static BudgetManager manager = new BudgetManager();
 
     public static void main(String[] args){
@@ -209,7 +210,7 @@ public class Main {
      * Finds and displays expenses by category.
      */
     private static void findByCategory(){
-        System.out.println("Enter category to search: ");
+        System.out.print("Enter category to search: ");
         String category = scanner.nextLine();
 
         try{
@@ -220,7 +221,7 @@ public class Main {
              }else {
                  System.out.println("\n=== Expenses in " + category + " ===");
                  for(int i=0; i<found.size(); i++){
-                     System.out.println((i + 1) + ". ");
+                     System.out.print((i + 1) + ". ");
                      found.get(i).displayInfo();
                  }
 
@@ -285,7 +286,7 @@ public class Main {
         double minAmount;
 
         while (true) {
-            System.out.println("Enter minimum amount: ");
+            System.out.print("Enter minimum amount: ");
             minAmount = scanner.nextDouble();
             scanner.nextLine();
 
@@ -298,11 +299,19 @@ public class Main {
 
         try{
         ArrayList<Expense> expenses = manager.findExpensesAbove(minAmount);
+
+        if(expenses.isEmpty()){
+            System.out.println("No expenses found above " + String.format("%.2f PLN", minAmount));
+            return;
+        }
+
         System.out.println("Expenses above " + String.format("%.2f PLN:", minAmount));
         System.out.println(" ");
         for(Expense expense : expenses){
             expense.displayInfo();
         }
+            System.out.println("─────────────────────────────");
+            System.out.println("Found: " + expenses.size() + " expenses");
 
         }catch (IllegalArgumentException e){
             System.out.println("Error: " + e.getMessage());
