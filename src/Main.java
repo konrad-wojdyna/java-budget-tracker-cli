@@ -1,4 +1,5 @@
 import model.Expense;
+import service.BudgetManager;
 
 /**
  * Budget Tracker CLI - Main Entry Point
@@ -16,68 +17,64 @@ public class Main {
         System.out.println("Java Budget Tracker CLI");
 
         //Test Expense class
-        textExpenseClass();
+        testBudgetManager();
 
     }
 
     /**
-     * Tests the Expense class functionality
+     * Tests BudgetManager functionality with ArrayList
      */
-    private static void textExpenseClass(){
-        System.out.println("=== Testing Expense Class ===\n");
+    public static void testBudgetManager(){
+        System.out.println("=== Testing BudgetManager ===\n");
 
-        Expense groceries = new Expense("Weekly Groceries", 450.50, "Food", "2025-01-15", "Weekly shopp at Dino");
-        Expense transport = new Expense("Monthly Bus Pass", 120.00, "Transport", "2025-01-01", "Monthly pass");
-        Expense laptop = new Expense("Work Laptop", 3500.00, "Electronics", "2025-01-10", "Laptop for work");
-        Expense testWithoutDesc = new Expense("Bus", 120, "Transport", "2025-01-20");
-
-        // Display expenses
-        System.out.println("Created expenses:");
-        groceries.displayInfo();
-        transport.displayInfo();
-        laptop.displayInfo();
+        BudgetManager manager = new BudgetManager();
 
         System.out.println();
 
-        // Test getters
-        System.out.println("=== Testing Getters ===");
-        System.out.println("Groceries name: " + groceries.getName());
-        System.out.println("Groceries amount: " + groceries.getAmount());
-        System.out.println("Groceries category: " + groceries.getCategory());
-        System.out.println("Groceries date: " + groceries.getDate());
+        //Add expenses
+        System.out.println("--- Adding Expenses ---");
+        manager.addExpense(new Expense("Weekly Groceries", 450.50, "Food", "2025-01-15"));
+        manager.addExpense(new Expense("Monthly Bus Pass", 120.00, "Transport", "2025-01-01"));
+        manager.addExpense(new Expense("Netflix Subscription", 49.00, "Entertainment", "2025-01-05"));
+        manager.addExpense(new Expense("Work Laptop", 3500.00, "Electronics", "2025-01-10"));
+        manager.addExpense(new Expense("Coffee", 15.50, "Food", "2025-01-16"));
 
         System.out.println();
 
-        // Test isExpensive
-        System.out.println("=== Testing isExpensive ===");
-        System.out.println("Groceries is expensive? " + groceries.isExpensive());
-        System.out.println("Laptop is expensive? " + laptop.isExpensive());
+        //Display all
+        manager.displayAllExpenses();
 
         System.out.println();
 
-        // Test setter with validation
-        System.out.println("=== Testing Setter ===");
-        System.out.println("Original amount: " + groceries.getAmount());
-        groceries.setAmount(520.00);
-        System.out.println("Updated amount: " + groceries.getAmount());
+        // Statistics
+        System.out.println("=== Statistics ===");
+        System.out.println("Total expenses: " + manager.getExpenseCount());
+        System.out.println("Total amount: " + String.format("%.2f", manager.calculateTotal()) + " PLN");
 
         System.out.println();
 
-        //Test isFromMonth
-        System.out.println("=== Testing isFromMonth ===");
-        System.out.println(groceries.isFromMonth("2025-01-15"));
-        System.out.println(groceries.isFromMonth("2025-04-12"));
+        // Find most expensive
+        Expense mostExpensive = manager.findMostExpensive();
+        if (mostExpensive != null) {
+            System.out.println("Most expensive:");
+            System.out.print("  ");
+            mostExpensive.displayInfo();
+        }
 
-        // Test validation (this will throw exception)
-        System.out.println("=== Testing Validation ===");
+        System.out.println();
 
-        try {
-            Expense invalid = new Expense("Invalid", -100, "Food", "2025-01-15", "Invalid desc");
-        } catch (IllegalArgumentException e) {
-            System.out.println("✓ Validation works! Error caught: " + e.getMessage());
+        // Find cheapest
+        Expense cheapest = manager.findCheapest();
+        if (cheapest != null) {
+            System.out.println("Cheapest:");
+            System.out.print("  ");
+            cheapest.displayInfo();
         }
 
         System.out.println();
         System.out.println("✅ All tests passed!");
     }
+
+
 }
+
