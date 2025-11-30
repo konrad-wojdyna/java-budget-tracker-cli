@@ -1,4 +1,6 @@
+import model.Category;
 import model.Expense;
+import model.Priority;
 import service.BudgetManager;
 
 import java.util.ArrayList;
@@ -79,6 +81,10 @@ public class Main {
                    break;
 
                case 9:
+                   findByPriority();
+                   break;
+
+               case 10:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
@@ -102,7 +108,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Wybierz co chcesz zrobić: (1-7)");
+        System.out.println("Wybierz co chcesz zrobić: (1-10)");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -111,7 +117,8 @@ public class Main {
         System.out.println("6. 💰 Show Most/Least Expensive");
         System.out.println("7. 📋 Display Expensive items");
         System.out.println("8. ⚠ Clear all expenses");
-        System.out.println("9. 🚪 Exit");
+        System.out.println("9. ⚡ Display Expenses by priority");
+        System.out.println("10. 🚪 Exit");
 
     }
 
@@ -131,7 +138,7 @@ public class Main {
             System.out.println("Name cannot be empty! Try again.");
         }else {
             break;
-        }
+         }
         }
 
         //Amount
@@ -150,16 +157,25 @@ public class Main {
 
 
         //Category
-        String category;
-        while (true){
-        System.out.println("Enter category (Food/Transport/Entertainment/etc.): ");
-        category = scanner.nextLine();
+        Category category;
+        while (true) {
+            System.out.println("\n📂 Select category:");
+            Category[] categories = Category.values();
 
-        if(category.trim().isEmpty()){
-            System.out.println("Category cannot be empty! Try again");
-        }else {
-            break;
-        }
+            for (int i = 0; i < categories.length; i++) {
+                System.out.println(" " + (i + 1) + ". " + categories[i].getLabel());
+            }
+
+            System.out.println("Enter choice (1-" + categories.length + "): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if (choice >= 1 && choice <= categories.length) {
+                category = categories[choice - 1];
+                break;
+            } else {
+                System.out.println("Invalid choice! Try again.");
+            }
         }
 
         //Date
@@ -172,16 +188,38 @@ public class Main {
             System.out.println("Date cannot be empty! Try again");
         }else {
             break;
+         }
         }
 
+        //Priority - Select from enum
+        Priority priority;
+        while (true){
+            System.out.println("\n Select priority:");
+            Priority[] priorities = Priority.values();
+
+            for(int i=0; i<priorities.length; i++){
+                System.out.println(" " + (i + 1) + ". " + priorities[i]);
+            }
+
+            System.out.println("Enter choice (1-" + priorities.length + "): ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if(choice >= 1 && choice <= priorities.length){
+                priority = priorities[choice - 1];
+                break;
+            }else {
+                System.out.println("Invalid choice! Try again.");
+            }
         }
+
 
         //Description (optional)
         System.out.println("Enter description (optional, press Enter to skip): ");
         String description = scanner.nextLine();
 
         try{
-            Expense expense = new Expense(name, amount, category, date, description);
+            Expense expense = new Expense(name, amount, category, date, description, priority);
             manager.addExpense(expense);
         }catch (IllegalArgumentException e){
             System.out.println("Error: " + e.getMessage());
@@ -210,16 +248,31 @@ public class Main {
      * Finds and displays expenses by category.
      */
     private static void findByCategory(){
-        System.out.print("Enter category to search: ");
-        String category = scanner.nextLine();
+        System.out.println("\n📂 Select category to search:");
+        Category[] categories = Category.values();
+
+        for(int i=0; i<categories.length; i++){
+            System.out.println(" " + (i + 1) + ". " + categories[i].getLabel());
+        }
+
+        System.out.println("Enter choice (1-" + categories.length + "): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if(choice < 1 || choice > categories.length){
+            System.out.println("Invalid choice!");
+            return;
+        }
+
+        Category category = categories[choice - 1];
 
         try{
              ArrayList<Expense> found = manager.findByCategory(category);
 
              if(found.isEmpty()){
-                 System.out.println("No expenses found in category: " + category);
+                 System.out.println("No expenses found in category: " + category.getDisplayName());
              }else {
-                 System.out.println("\n=== Expenses in " + category + " ===");
+                 System.out.println("\n=== Expenses in " + category.getDisplayName() + " ===");
                  for(int i=0; i<found.size(); i++){
                      System.out.print((i + 1) + ". ");
                      found.get(i).displayInfo();
@@ -344,8 +397,46 @@ public class Main {
         }else {
             System.out.println("Cancelled.");
         }
+    }
 
+    /**
+     * Find all expenses by priority level
+     */
+    private static void findByPriority(){
+        System.out.println("Select priority to search:");
+        Priority[] priorities = Priority.values();
 
+        for(int i=0; i < priorities.length; i++){
+            System.out.println(" " + (i + 1) + ". " + priorities[i]);
+        }
+
+        System.out.println("Enter choice (1-" + priorities.length + "): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if(choice < 1 || choice > priorities.length){
+            System.out.println("Invalid choice!");
+            return;
+        }
+
+        Priority priority = priorities[choice - 1];
+
+        try{
+            ArrayList<Expense> found = manager.findByPriority(priority);
+
+            if(found.isEmpty()){
+                System.out.println("No expenses with priority: " + priority);
+            }else {
+                System.out.println("\n=== Expenses with priority: " + priority + " ===");
+                for(int i=0; i<found.size(); i++){
+                    System.out.print((i + 1) + ". ");
+                    found.get(i).displayInfo();
+                }
+                System.out.println("\nFound: " + found.size() + " expenses");
+            }
+        }catch (IllegalArgumentException e){
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
 
