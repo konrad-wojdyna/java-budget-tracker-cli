@@ -43,6 +43,16 @@ public class Expense {
         this.description = description;
     }
 
+    /**
+     * Creates a new expense without description
+     *
+     * @param name expense name
+     * @param amount expense amount
+     * @param category expense category
+     * @param date expense date
+     * @throws IllegalArgumentException if validation fails
+     */
+
     public Expense(String name, double amount, String category, String date){
         this(name, amount, category, date, "");
     }
@@ -67,6 +77,13 @@ public class Expense {
         return description;
     }
 
+    /**
+     * Update expense amount with validation
+     *
+     * @param amount new amount in PLN, must be positive
+     * @throws IllegalArgumentException if amount is negative
+     */
+
     public void setAmount(double amount) {
         if(amount < 0){
             throw new IllegalArgumentException("Amount cannot be negative: " + amount);
@@ -74,9 +91,19 @@ public class Expense {
         this.amount = amount;
     }
 
+    /**
+     * Displays formatted expense information to console
+     * Shows description only if present
+     */
+
     public void displayInfo(){
-        System.out.printf("%s: %s - %.2f PLN (Date: %s)%n %s:",
+        if(description != null && !description.isEmpty()){
+        System.out.printf("%s: %s - %.2f PLN (Date: %s) Description: %s%n",
                 category, name, amount, date, description);
+        }else {
+            System.out.printf("%s: %s - %.2f PLN (Date: %s)%n",
+                    category, name, amount, date);
+        }
     }
 
     public boolean isExpensive() {
