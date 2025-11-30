@@ -24,7 +24,6 @@ public class BudgetManager {
      */
     public BudgetManager(){
         this.expenses = new ArrayList<>();
-        System.out.println("Budget Manager initialized");
     }
 
     /**
