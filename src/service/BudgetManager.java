@@ -1,6 +1,8 @@
 package service;
 
+import model.Category;
 import model.Expense;
+import model.Priority;
 
 import java.util.ArrayList;
 
@@ -135,20 +137,20 @@ public class BudgetManager {
     /**
      * Find all expenses by category name
      *
-     * @param category expense category name, cannot be null
+     * @param category expense category enum
      * @throws IllegalArgumentException if category name is null
-     * @return ArrayList with Expenses by category name
+     * @return ArrayList with Expenses by category name (empty is none)
      */
-    public ArrayList<Expense> findByCategory(String category){
+    public ArrayList<Expense> findByCategory(Category category){
 
         if(category == null){
-            throw new IllegalArgumentException("Provide category name!");
+            throw new IllegalArgumentException("Category cannot be null");
         }
 
         ArrayList<Expense> expensesByCategory = new ArrayList<>();
 
         for(Expense expense : expenses){
-            if(expense.getCategory().equals(category)){
+            if(expense.getCategory() == category){
                 expensesByCategory.add(expense);
             }
         }
@@ -159,15 +161,12 @@ public class BudgetManager {
     /**
      * Calculates total amount for specified category.
      *
-     * @param category the category to calculate
+     * @param category the category enum to calculate
      * @return total amount in PLN for that category
      */
-    public double getTotalByCategory(String category){
-        if(category == null){
-            throw new IllegalArgumentException("Provide category name!");
-        }
-
+    public double getTotalByCategory(Category category){
         ArrayList<Expense> expensesByCategory = findByCategory(category);
+
         double total = 0;
 
         for(Expense expense : expensesByCategory){
@@ -214,5 +213,27 @@ public class BudgetManager {
         }
 
         return  expensesAboveAmount;
+    }
+
+    /**
+     * Finds all expenses with specified priority.
+     *
+     * @param priority level
+     * @return ArrayList of expenses with that priority
+     */
+    public ArrayList<Expense> findByPriority(Priority priority){
+        if(priority == null){
+            throw new IllegalArgumentException("Prority cannot be null");
+        }
+
+        ArrayList<Expense> expensesByPriority = new ArrayList<>();
+
+        for(Expense expense : expenses){
+            if(expense.getPriority() == priority){
+                expensesByPriority.add(expense);
+            }
+        }
+
+        return expensesByPriority;
     }
 }
