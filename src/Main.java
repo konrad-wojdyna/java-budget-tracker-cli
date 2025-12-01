@@ -85,15 +85,19 @@ public class Main {
                    break;
 
                case 10:
-                   displayCategoryStatistics();
+                   manager.displayCategoryStatistics();
                    break;
 
                case 11:
+                   testOverloading();
+                   break;
+
+               case 12:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-7.");
+                   System.out.println("Invalid choice! Please enter 1-12.");
                    break;
            }
 
@@ -112,7 +116,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Wybierz co chcesz zrobić: (1-10)");
+        System.out.println("Enter choice (1-12): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -123,7 +127,8 @@ public class Main {
         System.out.println("8. ⚠ Clear all expenses");
         System.out.println("9. ⚡ Display Expenses by priority");
         System.out.println("10. ⚡ Display category statistics");
-        System.out.println("11. 🚪 Exit");
+        System.out.println("11. 🧪 Test Overloading");
+        System.out.println("12. 🚪 Exit");
 
     }
 
@@ -444,34 +449,44 @@ public class Main {
         }
     }
 
-    private static void displayCategoryStatistics(){
-        System.out.println("\n=== Category Statistics ===");
-        System.out.println("───────────────────────────────────────");
+    /**
+     * Demonstrate method overloading with various add methods.
+     */
+    private static void testOverloading(){
+        System.out.println("\n=== Testing Method Overloading ===\n");
 
-        Category[] categories = Category.values();
-        boolean hasAny = false;
+        //Method 1: Full version (all parameters)
+        System.out.println("1️⃣ Adding with ALL parameters:");
+        manager.addExpense("Test Full", 99.99, Category.OTHER, "2025-01-20",
+                "Testing full method", Priority.LOW);
 
-        for(Category category : categories){
-          ArrayList<Expense> expensesByCategory = manager.findByCategory(category);
+        System.out.println();
 
-          if(!expensesByCategory.isEmpty()){
-              hasAny = true;
-          double total = manager.getTotalByCategory(category);
-              System.out.printf("%s: %d expenses | %.2f PLN%n",
-                      category.getLabel(),  // ← with icon!
-                      expensesByCategory.size(),
-                      total);
-          }
-        }
+        //Method 2: Without priority (defaults to MEDIUM)
+        System.out.println("2️⃣ Adding WITHOUT priority:");
+        manager.addExpense("Test No Priority", 50.00, Category.FOOD, "2025-01-20",
+                "No priority specified");
 
-        if(!hasAny){
-            System.out.println("No expenses in any category yet.");
-        }
+        System.out.println();
 
-        System.out.println("───────────────────────────────────────");
+        //Method 3: Without desctiption and priority
+        System.out.println("3️⃣ Adding WITHOUT description and priority:");
+        manager.addExpense("Test Minimal", 25.00, Category.TRANSPORT, "2025-01-20");
+
+        System.out.println();
+
+        //Method 4: Varargs - add multiple at once
+        System.out.println("4️⃣ Adding MULTIPLE with varargs:");
+        Expense bulk1 = new Expense("Bulk 1", 10, Category.FOOD, "2025-01-20");
+        Expense bulk2 = new Expense("Bulk 2", 20, Category.FOOD, "2025-01-20");
+        Expense bulk3 = new Expense("Bulk 3", 30, Category.FOOD, "2025-01-20");
+
+        manager.addExpense(bulk1, bulk2, bulk3);
+
+        System.out.println();
+        System.out.println("✅ Overloading test complete!");
+        System.out.println("Check 'Display All' to see added expenses.");
     }
-
-
 }
 
 
