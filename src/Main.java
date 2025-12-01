@@ -93,6 +93,11 @@ public class Main {
                    break;
 
                case 12:
+                   manager.addPresetExpenses();
+                   System.out.println("Sample expenses added!");
+                   break;
+
+               case 13:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
@@ -116,7 +121,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-12): ");
+        System.out.println("Enter choice (1-13): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -128,7 +133,8 @@ public class Main {
         System.out.println("9. ⚡ Display Expenses by priority");
         System.out.println("10. ⚡ Display category statistics");
         System.out.println("11. 🧪 Test Overloading");
-        System.out.println("12. 🚪 Exit");
+        System.out.println("12. 🧪 Test: add and show preset expenses data");
+        System.out.println("13. 🚪 Exit");
 
     }
 
@@ -487,6 +493,14 @@ public class Main {
         System.out.println("✅ Overloading test complete!");
         System.out.println("Check 'Display All' to see added expenses.");
     }
+
+    private static void test(int x, String y){
+        manager.addExpense();
+    }
+
+    private static void test(String y, int x){}
+
+
 }
 
 

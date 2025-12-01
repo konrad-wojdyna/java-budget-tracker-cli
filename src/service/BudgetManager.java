@@ -325,4 +325,49 @@ public class BudgetManager {
 
         System.out.println("───────────────────────────────────────");
     }
+
+    /**
+     * Finds expenses by category and displays them.
+     * Convenience method combining find + display
+     *
+     * @param category category to search
+     * @return count of found expenses
+     */
+    public int findAndDisplayByCategory(Category category){
+        ArrayList<Expense> found = findByCategory(category);
+
+        if(found.isEmpty()){
+            System.out.println("No expenses in category: " + category.getDisplayName());
+            return  0;
+        }
+
+        System.out.println("\n" + category.getLabel() + " Expenses:");
+        System.out.println("───────────────────────────────────────");
+        for (int i = 0; i < found.size(); i++) {
+            System.out.print((i + 1) + ". ");
+            found.get(i).displayInfo();
+        }
+        System.out.println("───────────────────────────────────────");
+        System.out.println("Total: " + String.format("%.2f PLN", getTotalByCategory(category)));
+
+        return found.size();
+    }
+
+
+    /**
+     * Add common preset expenses for testing.
+     * Uses varargs internally.
+     */
+    public void addPresetExpenses(){
+        Expense[] presets = {
+                new Expense("Morning Coffee", 15, Category.FOOD, "2025-01-20"),
+                new Expense("Lunch", 45, Category.FOOD, "2025-01-20"),
+                new Expense("Bus Ticket", 4.5, Category.TRANSPORT, "2025-01-20"),
+                new Expense("Movie", 30, Category.ENTERTAINMENT, "2025-01-20"),
+                new Expense("Rent", 1500, Category.HOUSING, "2025-01-01")
+        };
+
+        addExpense(presets);
+    }
+
 }
