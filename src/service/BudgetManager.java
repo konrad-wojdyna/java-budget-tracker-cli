@@ -3,28 +3,46 @@ package service;
 import model.Category;
 import model.Expense;
 import model.Priority;
+import repository.ExpenseRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages a collection of expenses with CRUD operations.
  * This service class provides business logic for expense management
  * including adding, removing, displaying, and calculation statistics.
- * Uses ArrayList for dynamic storage.
+ *
+ * This calss depends on ExpenseRepository INTERFACE,
+ * not a concrete implementation. This allows:
+ * - Easy testing (mock repository)
+ * - Flexible storage (memory, file, database)
+ * - Loose coupling
+ *
  *
  * @author Konrad Wojdyna
- * @version 0.4.0
+ * @version 0.5.0
  */
 
 public class BudgetManager {
 
-    private final ArrayList<Expense> expenses;
+    private final ExpenseRepository repository;
 
     /**
-     * Constructs a new BudgetManager with empty expene list.
+     * Creates BudgetManager with specified repository.
+     *
+     * @param repository the expense repository implementation
+     * @throws IllegalArgumentException if repository is null
      */
-    public BudgetManager(){
-        this.expenses = new ArrayList<>();
+    public BudgetManager(ExpenseRepository repository){
+
+        if(repository == null){
+            throw new IllegalArgumentException("Repository cannot be null");
+        }
+
+        this.repository = repository;
+        System.out.println("Budget Manager initialized with " +
+                repository.getClass().getSimpleName());
     }
 
     /**
@@ -38,7 +56,7 @@ public class BudgetManager {
             throw new IllegalArgumentException("Expense canot be null");
         }
 
-        expenses.add(expense);
+        repository.save(expense);
         System.out.println("✓ Added: " + expense.getName());
     }
 
@@ -89,15 +107,8 @@ public class BudgetManager {
             return;
         }
 
-        int added = 0;
-        for(Expense expense : expenses){
-            if(expense != null){
-                addExpense(expense);
-                added++;
-            }
-        }
-
-        System.out.println("✓ Bulk add complete: " + added + " expenses added.");
+        repository.saveAll(expenses);
+        System.out.println("✓ Bulk add complete expenses added.");
     }
 
     /**
@@ -105,15 +116,18 @@ public class BudgetManager {
      * Shows numbered list with formatted expense infromation.
      */
     public void displayAllExpenses(){
-        if(expenses.isEmpty()){
+
+        List<Expense> allExpenses = repository.findAll();
+
+        if(allExpenses.isEmpty()){
             System.out.println("No expenses to display");
             return;
         }
 
         System.out.println("\n=== All Expenses ===");
-        for(int i=0; i<expenses.size(); i++){
+        for(int i=0; i<allExpenses.size(); i++){
             System.out.print((i + 1) + ". ");
-            expenses.get(i).displayInfo();
+            allExpenses.get(i).displayInfo();
         }
     }
 
@@ -123,8 +137,10 @@ public class BudgetManager {
      * @return sum of all expense amounts in PLN
      */
     public double calculateTotal(){
+        List<Expense> allExpenses = repository.findAll();
+
         double total = 0;
-        for(Expense expense : expenses){
+        for(Expense expense : allExpenses){
             total += expense.getAmount();
         }
 
@@ -137,7 +153,7 @@ public class BudgetManager {
      * @return count of expenses
      */
     public int getExpenseCount(){
-        return expenses.size();
+        return repository.count();
     }
 
     /**
@@ -146,13 +162,16 @@ public class BudgetManager {
      * @return the expense with the highest amount, or null if no expenses
      */
     public Expense findMostExpensive(){
-        if(expenses.isEmpty()){
+
+        List<Expense> allExpenses = repository.findAll();
+
+        if(allExpenses.isEmpty()){
             return  null;
         }
 
-        Expense mostExpensive = expenses.getFirst();
+        Expense mostExpensive = allExpenses.getFirst();
 
-        for(Expense expense : expenses){
+        for(Expense expense : allExpenses){
             if(expense.getAmount() > mostExpensive.getAmount()){
                 mostExpensive = expense;
             }
@@ -167,13 +186,16 @@ public class BudgetManager {
      * @return the expense with lowest amount, or null if no expenses
      */
     public Expense findCheapest(){
-        if(expenses.isEmpty()){
+
+        List<Expense> allExpenses = repository.findAll();
+
+        if(allExpenses.isEmpty()){
             return  null;
         }
 
-        Expense cheapest = expenses.getFirst();
+        Expense cheapest = allExpenses.getFirst();
 
-        for(Expense expense : expenses){
+        for(Expense expense : allExpenses){
             if(expense.getAmount() < cheapest.getAmount()){
                 cheapest = expense;
             }
@@ -187,7 +209,7 @@ public class BudgetManager {
      * This operation cannot be undone.
      */
     public void clearAllExpenses(){
-        expenses.clear();
+        repository.deleteAll();
         System.out.println("All expenses cleared");
     }
 
@@ -196,23 +218,9 @@ public class BudgetManager {
      *
      * @param category expense category enum
      * @throws IllegalArgumentException if category name is null
-     * @return ArrayList with Expenses by category name (empty is none)
      */
-    public ArrayList<Expense> findByCategory(Category category){
-
-        if(category == null){
-            throw new IllegalArgumentException("Category cannot be null");
-        }
-
-        ArrayList<Expense> expensesByCategory = new ArrayList<>();
-
-        for(Expense expense : expenses){
-            if(expense.getCategory() == category){
-                expensesByCategory.add(expense);
-            }
-        }
-
-        return  expensesByCategory;
+    public List<Expense> findByCategory(Category category){
+          return  repository.findByCategory(category);
     }
 
     /**
@@ -222,7 +230,7 @@ public class BudgetManager {
      * @return total amount in PLN for that category
      */
     public double getTotalByCategory(Category category){
-        ArrayList<Expense> expensesByCategory = findByCategory(category);
+        List<Expense> expensesByCategory = findByCategory(category);
 
         double total = 0;
 
@@ -240,12 +248,9 @@ public class BudgetManager {
      * @throws IndexOutOfBoundsException if index is invalid
      */
     public void  removeExpense(int index){
-         if(index < 0 || index >= expenses.size()){
-             throw new IndexOutOfBoundsException("Invalid index");
-         }
-
-         expenses.remove(index);
-        System.out.println("Expense with index: " + index + " removed.");
+        Expense expense = repository.findById(index);
+        repository.delete(index);
+        System.out.println("Removed: " + expense.getName());
     }
 
     /**
@@ -255,21 +260,8 @@ public class BudgetManager {
      * @throws IllegalArgumentException amount cannot be negative
      * @return ArrayList of expenses with amount > threshold
      */
-    public ArrayList<Expense> findExpensesAbove(double amount){
-
-        if(amount < 0){
-            throw new IllegalArgumentException("Amount must be positive!");
-        }
-
-        ArrayList<Expense> expensesAboveAmount = new ArrayList<>();
-
-        for(Expense expense : expenses){
-            if(expense.getAmount() >= amount){
-                expensesAboveAmount.add(expense);
-            }
-        }
-
-        return  expensesAboveAmount;
+    public List<Expense> findExpensesAbove(double amount){
+        return repository.findExpensesAbove(amount);
     }
 
     /**
@@ -278,20 +270,8 @@ public class BudgetManager {
      * @param priority level
      * @return ArrayList of expenses with that priority
      */
-    public ArrayList<Expense> findByPriority(Priority priority){
-        if(priority == null){
-            throw new IllegalArgumentException("Prority cannot be null");
-        }
-
-        ArrayList<Expense> expensesByPriority = new ArrayList<>();
-
-        for(Expense expense : expenses){
-            if(expense.getPriority() == priority){
-                expensesByPriority.add(expense);
-            }
-        }
-
-        return expensesByPriority;
+    public List<Expense> findByPriority(Priority priority){
+        return repository.findByPriority(priority);
     }
 
     /**
@@ -306,7 +286,7 @@ public class BudgetManager {
         boolean hasAny = false;
 
         for(Category category : categories){
-            ArrayList<Expense> categoryExpense = findByCategory(category);
+            List<Expense> categoryExpense = findByCategory(category);
 
             if(!categoryExpense.isEmpty()){
                 hasAny = true;
@@ -334,7 +314,7 @@ public class BudgetManager {
      * @return count of found expenses
      */
     public int findAndDisplayByCategory(Category category){
-        ArrayList<Expense> found = findByCategory(category);
+        List<Expense> found = findByCategory(category);
 
         if(found.isEmpty()){
             System.out.println("No expenses in category: " + category.getDisplayName());
@@ -369,5 +349,4 @@ public class BudgetManager {
 
         addExpense(presets);
     }
-
 }

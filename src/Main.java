@@ -1,9 +1,13 @@
 import model.Category;
 import model.Expense;
 import model.Priority;
+import repository.ExpenseRepository;
+import repository.InMemoryExpenseRepository;
+import repository.MockExpenseRepository;
 import service.BudgetManager;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -19,8 +23,13 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
-    private static BudgetManager manager = new BudgetManager();
+    private final static Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
+
+    // OLD: private static BudgetManager manager = new BudgetManager();
+
+    //NEW: Create repository, then inject into manager
+    private  static ExpenseRepository repository = new InMemoryExpenseRepository();
+    private  static BudgetManager manager = new BudgetManager(repository);
 
     public static void main(String[] args){
 
@@ -98,11 +107,19 @@ public class Main {
                    break;
 
                case 13:
+                   testMockRepository();
+                   break;
+
+               case 14:
+                   switchRepository();
+                   break;
+
+               case 15:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-12.");
+                   System.out.println("Invalid choice! Please enter 1-15.");
                    break;
            }
 
@@ -121,7 +138,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-13): ");
+        System.out.println("Enter choice (1-15): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -134,7 +151,9 @@ public class Main {
         System.out.println("10. ⚡ Display category statistics");
         System.out.println("11. 🧪 Test Overloading");
         System.out.println("12. 🧪 Test: add and show preset expenses data");
-        System.out.println("13. 🚪 Exit");
+        System.out.println("13. 🧪 Test Mock Repository");
+        System.out.println("14. 🚪 Switch repository");
+        System.out.println("15. 🚪 Exit");
 
     }
 
@@ -283,7 +302,7 @@ public class Main {
         Category category = categories[choice - 1];
 
         try{
-             ArrayList<Expense> found = manager.findByCategory(category);
+             List<Expense> found = manager.findByCategory(category);
 
              if(found.isEmpty()){
                  System.out.println("No expenses found in category: " + category.getDisplayName());
@@ -367,7 +386,7 @@ public class Main {
         }
 
         try{
-        ArrayList<Expense> expenses = manager.findExpensesAbove(minAmount);
+        List<Expense> expenses = manager.findExpensesAbove(minAmount);
 
         if(expenses.isEmpty()){
             System.out.println("No expenses found above " + String.format("%.2f PLN", minAmount));
@@ -438,7 +457,7 @@ public class Main {
         Priority priority = priorities[choice - 1];
 
         try{
-            ArrayList<Expense> found = manager.findByPriority(priority);
+            List<Expense> found = manager.findByPriority(priority);
 
             if(found.isEmpty()){
                 System.out.println("No expenses with priority: " + priority);
@@ -494,13 +513,48 @@ public class Main {
         System.out.println("Check 'Display All' to see added expenses.");
     }
 
-    private static void test(int x, String y){
-        manager.addExpense();
-    }
+    /**
+     * Test Mock Repository
+     */
+  private static void testMockRepository(){
+      System.out.println("\n=== Testing Mock Repository ===");
 
-    private static void test(String y, int x){}
+      ExpenseRepository mockRepo = new MockExpenseRepository();
+      BudgetManager testManager = new BudgetManager(mockRepo);
 
+      testManager.addExpense("Test", 50, Category.FOOD, "2025-01-20");
+      testManager.displayAllExpenses();
 
+      System.out.println("Count: " + testManager.getExpenseCount());  // 2 (fake)
+      System.out.println("\n✅ Mock repository test complete!");
+  }
+
+    /**
+     * Powerfull of Interfaces - switch repositories (swap implementation at runtime!)
+     */
+  private static void switchRepository(){
+
+      System.out.println("\n=== Switch Repository ===");
+      System.out.println("1. In-Memory Repository");
+      System.out.println("2. Mock Repository (fake data)");
+      System.out.print("Choose (1-2): ");
+
+      int choice = scanner.nextInt();
+      scanner.nextLine();
+
+      if(choice == 1){
+          repository = new InMemoryExpenseRepository();
+      }else if(choice == 2){
+          repository = new MockExpenseRepository();
+      }else {
+          System.out.println("Invalid choice!");
+          return;
+      }
+
+      //Create NEW manager with new repository
+      manager = new BudgetManager(repository);
+      System.out.println("✅ Repository switched!");
+  }
 }
 
 
