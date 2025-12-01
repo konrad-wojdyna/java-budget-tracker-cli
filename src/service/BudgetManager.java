@@ -8,18 +8,17 @@ import java.util.ArrayList;
 
 /**
  * Manages a collection of expenses with CRUD operations.
- *
  * This service class provides business logic for expense management
  * including adding, removing, displaying, and calculation statistics.
  * Uses ArrayList for dynamic storage.
  *
  * @author Konrad Wojdyna
- * @version 0.1.0
+ * @version 0.4.0
  */
 
 public class BudgetManager {
 
-    private ArrayList<Expense> expenses;
+    private final ArrayList<Expense> expenses;
 
     /**
      * Constructs a new BudgetManager with empty expene list.
@@ -41,6 +40,64 @@ public class BudgetManager {
 
         expenses.add(expense);
         System.out.println("✓ Added: " + expense.getName());
+    }
+
+    /**
+     * Creates and adds expense with all details.
+     * Convenience method to avoid creating Expense object separately.
+     *
+     * @param name expense name
+     * @param amount expense amount
+     * @param category expense category
+     * @param date expense date
+     * @param description expense description
+     * @param priority expense priority
+     */
+    public void addExpense(String name, double amount, Category category, String date, String description,
+                           Priority priority){
+        Expense expense = new Expense(name, amount, category, date, description, priority);
+        addExpense(expense);
+    }
+
+    /**
+     * Creates and adds expense without priority (defaults to MEDIUM).
+     *
+     * @param name expense name
+     * @param amount expense amount
+     * @param category expense category
+     * @param date expense date
+     * @param description expense description
+     */
+    public void addExpense(String name, double amount, Category category, String date, String description){
+        addExpense(name, amount, category, date, description, Priority.MEDIUM);
+    }
+
+    /**
+     * Creates and adds expense without description or priority.
+     *
+     * @param name expense name
+     * @param amount expense amount
+     * @param category expense category
+     */
+    public void addExpense(String name, double amount, Category category, String date){
+        addExpense(name, amount, category, date, "", Priority.MEDIUM);
+    }
+
+    public void addExpense(Expense ...expenses){
+        if(expenses == null || expenses.length == 0){
+            System.out.println("No expenses provided");
+            return;
+        }
+
+        int added = 0;
+        for(Expense expense : expenses){
+            if(expense != null){
+                addExpense(expense);
+                added++;
+            }
+        }
+
+        System.out.println("✓ Bulk add complete: " + added + " expenses added.");
     }
 
     /**
@@ -86,14 +143,14 @@ public class BudgetManager {
     /**
      * Find the most expensive expense in the budget
      *
-     * @return the expense with highest amount, or null if no expenses
+     * @return the expense with the highest amount, or null if no expenses
      */
     public Expense findMostExpensive(){
         if(expenses.isEmpty()){
             return  null;
         }
 
-        Expense mostExpensive = expenses.get(0);
+        Expense mostExpensive = expenses.getFirst();
 
         for(Expense expense : expenses){
             if(expense.getAmount() > mostExpensive.getAmount()){
@@ -114,7 +171,7 @@ public class BudgetManager {
             return  null;
         }
 
-        Expense cheapest = expenses.get(0);
+        Expense cheapest = expenses.getFirst();
 
         for(Expense expense : expenses){
             if(expense.getAmount() < cheapest.getAmount()){
@@ -235,5 +292,37 @@ public class BudgetManager {
         }
 
         return expensesByPriority;
+    }
+
+    /**
+     * Dispalys statistics grouped by category.
+     * Shows only categories with expenses.
+     */
+    public void displayCategoryStatistics(){
+        System.out.println("\n=== Category Statistics ===");
+        System.out.println("───────────────────────────────────────");
+
+        Category[] categories = Category.values();
+        boolean hasAny = false;
+
+        for(Category category : categories){
+            ArrayList<Expense> categoryExpense = findByCategory(category);
+
+            if(!categoryExpense.isEmpty()){
+                hasAny = true;
+                double total = getTotalByCategory(category);
+
+                System.out.printf("%s: %d expenses | %.2f PLN%n",
+                        category.getLabel(),
+                        categoryExpense.size(),
+                        total);
+            }
+        }
+
+        if(!hasAny){
+            System.out.println("No expenses in any category yet.");
+        }
+
+        System.out.println("───────────────────────────────────────");
     }
 }
