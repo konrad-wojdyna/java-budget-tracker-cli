@@ -558,6 +558,7 @@ public class Main {
       transactions.add(t2);
       transactions.add(new Expense("2025-01-20", 50, "Gas", Category.TRANSPORT));
       transactions.add(new Income("2025-01-20", 500, "Freelance payment", "Client A"));
+      transactions.add(new Budget("2025-01-01", 500, "Monthly food budget", "2025-01", Category.FOOD));
 
       System.out.println("All transactions:");
       System.out.println("─────────────────────────────────────");
