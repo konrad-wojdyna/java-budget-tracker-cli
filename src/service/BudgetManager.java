@@ -5,7 +5,6 @@ import model.Expense;
 import model.Priority;
 import repository.ExpenseRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,48 +56,44 @@ public class BudgetManager {
         }
 
         repository.save(expense);
-        System.out.println("✓ Added: " + expense.getName());
+        System.out.println("✓ Added: " + expense.getDescription());
     }
 
     /**
      * Creates and adds expense with all details.
      * Convenience method to avoid creating Expense object separately.
      *
-     * @param name expense name
      * @param amount expense amount
      * @param category expense category
      * @param date expense date
      * @param description expense description
      * @param priority expense priority
      */
-    public void addExpense(String name, double amount, Category category, String date, String description,
-                           Priority priority){
-        Expense expense = new Expense(name, amount, category, date, description, priority);
+    public void addExpense(String date, double amount, String description, Category category, Priority priority){
+        Expense expense = new Expense(date, amount, description, category, priority);
         addExpense(expense);
     }
 
     /**
      * Creates and adds expense without priority (defaults to MEDIUM).
      *
-     * @param name expense name
      * @param amount expense amount
      * @param category expense category
      * @param date expense date
      * @param description expense description
      */
-    public void addExpense(String name, double amount, Category category, String date, String description){
-        addExpense(name, amount, category, date, description, Priority.MEDIUM);
+    public void addExpense(String date, double amount, String description, Category category){
+        addExpense(date, amount, description, category, Priority.MEDIUM);
     }
 
     /**
      * Creates and adds expense without description or priority.
      *
-     * @param name expense name
      * @param amount expense amount
      * @param category expense category
      */
-    public void addExpense(String name, double amount, Category category, String date){
-        addExpense(name, amount, category, date, "", Priority.MEDIUM);
+    public void addExpense(String date, double amount, Category category){
+        addExpense(date, amount, "", category, Priority.MEDIUM);
     }
 
     public void addExpense(Expense ...expenses){
@@ -250,7 +245,7 @@ public class BudgetManager {
     public void  removeExpense(int index){
         Expense expense = repository.findById(index);
         repository.delete(index);
-        System.out.println("Removed: " + expense.getName());
+        System.out.println("Removed: " + expense.getDescription());
     }
 
     /**
@@ -340,11 +335,11 @@ public class BudgetManager {
      */
     public void addPresetExpenses(){
         Expense[] presets = {
-                new Expense("Morning Coffee", 15, Category.FOOD, "2025-01-20"),
-                new Expense("Lunch", 45, Category.FOOD, "2025-01-20"),
-                new Expense("Bus Ticket", 4.5, Category.TRANSPORT, "2025-01-20"),
-                new Expense("Movie", 30, Category.ENTERTAINMENT, "2025-01-20"),
-                new Expense("Rent", 1500, Category.HOUSING, "2025-01-01")
+                new Expense("2025-01-20", 15, "Morning Coffee", Category.FOOD),
+                new Expense("2025-01-20", 45, "Lunch at restaurant", Category.FOOD),
+                new Expense("2025-01-20", 4.5, "Bus Ticket", Category.TRANSPORT),
+                new Expense("2025-01-20", 30, "Movie night", Category.ENTERTAINMENT),
+                new Expense("2025-01-01", 1500, "Monthly rent", Category.HOUSING)
         };
 
         addExpense(presets);

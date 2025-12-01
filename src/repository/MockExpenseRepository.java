@@ -17,11 +17,11 @@ public class MockExpenseRepository implements ExpenseRepository{
 
     public MockExpenseRepository(){
         this.fakeData = new ArrayList<>();
-        fakeData.add(new Expense("Fake Coffee", 10.00, Category.FOOD, "2025-01-01"));
-        fakeData.add(new Expense("Fake Bus", 15.90, Category.TRANSPORT, "2024-04-08"));
-        fakeData.add(new Expense("Netflix", 40.50, Category.ENTERTAINMENT, "2025-10-11"));
-        fakeData.add(new Expense("Medicines", 132.75, Category.HEALTHCARE, "2025-12-30"));
-        fakeData.add(new Expense("TV", 221.15, Category.HOUSING, "2025-06-20"));
+        fakeData.add(new Expense("2025-01-01", 10.00, "Fake Coffee", Category.FOOD));
+        fakeData.add(new Expense("2024-04-08", 15.90, "Fake Bus", Category.TRANSPORT));
+        fakeData.add(new Expense("2025-10-11", 40.50, "Netflix", Category.ENTERTAINMENT));
+        fakeData.add(new Expense("2025-12-30", 132.75, "Medicines", Category.HEALTHCARE));
+        fakeData.add(new Expense("2025-06-20", 221.15, "TV", Category.HOUSING));
     }
 
     @Override
@@ -30,7 +30,7 @@ public class MockExpenseRepository implements ExpenseRepository{
             throw new IllegalArgumentException("Expense cannot be null!");
         }
         fakeData.add(expense);
-        System.out.println("[MOCK] Pretending to save: " + expense.getName());
+        System.out.println("[MOCK] Pretending to save: " + expense.getDescription());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class MockExpenseRepository implements ExpenseRepository{
        }
 
        Expense removed = fakeData.remove(index);
-        System.out.println("[MOCK] Deleted: " + removed.getName());
+        System.out.println("[MOCK] Deleted: " + removed.getDescription());
     }
 
     @Override

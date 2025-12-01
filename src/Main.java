@@ -1,6 +1,4 @@
-import model.Category;
-import model.Expense;
-import model.Priority;
+import model.*;
 import repository.ExpenseRepository;
 import repository.InMemoryExpenseRepository;
 import repository.MockExpenseRepository;
@@ -115,11 +113,15 @@ public class Main {
                    break;
 
                case 15:
+                   testPolymorphism();
+                   break;
+
+               case 16:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-15.");
+                   System.out.println("Invalid choice! Please enter 1-16.");
                    break;
            }
 
@@ -138,7 +140,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-15): ");
+        System.out.println("Enter choice (1-16): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -153,7 +155,8 @@ public class Main {
         System.out.println("12. 🧪 Test: add and show preset expenses data");
         System.out.println("13. 🧪 Test Mock Repository");
         System.out.println("14. 🚪 Switch repository");
-        System.out.println("15. 🚪 Exit");
+        System.out.println("15. 🧪 Test Polymorphism (Income + Expense)");
+        System.out.println("16. 🚪 Exit");
 
     }
 
@@ -164,13 +167,13 @@ public class Main {
         System.out.println("=== Add New Expense ===");
 
         //Name
-        String name;
+        String date;
         while (true){
-        System.out.print("Enter expense name: ");
-        name = scanner.nextLine();
+            System.out.print("Enter date (YYYY-MM-DD): ");
+        date = scanner.nextLine();
 
-        if(name.trim().isEmpty()){
-            System.out.println("Name cannot be empty! Try again.");
+        if(date.trim().isEmpty()){
+            System.out.println("Date cannot be empty! Try again.");
         }else {
             break;
          }
@@ -187,8 +190,12 @@ public class Main {
             System.out.println("Amount must be positive! Try again.");
         }else {
             break;
+         }
         }
-        }
+
+        //Description (optional)
+        System.out.print("Enter description (optional, press Enter to skip): ");
+        String description = scanner.nextLine();
 
 
         //Category
@@ -213,19 +220,6 @@ public class Main {
             }
         }
 
-        //Date
-        String date;
-        while (true){
-        System.out.println("Enter date (YYYY-MM-DD): ");
-        date = scanner.nextLine();
-
-        if(date.trim().isEmpty()){
-            System.out.println("Date cannot be empty! Try again");
-        }else {
-            break;
-         }
-        }
-
         //Priority - Select from enum
         Priority priority;
         while (true){
@@ -248,13 +242,8 @@ public class Main {
             }
         }
 
-
-        //Description (optional)
-        System.out.println("Enter description (optional, press Enter to skip): ");
-        String description = scanner.nextLine();
-
         try{
-            Expense expense = new Expense(name, amount, category, date, description, priority);
+            Expense expense = new Expense(date, amount, description, category, priority);
             manager.addExpense(expense);
         }catch (IllegalArgumentException e){
             System.out.println("Error: " + e.getMessage());
@@ -482,29 +471,29 @@ public class Main {
 
         //Method 1: Full version (all parameters)
         System.out.println("1️⃣ Adding with ALL parameters:");
-        manager.addExpense("Test Full", 99.99, Category.OTHER, "2025-01-20",
-                "Testing full method", Priority.LOW);
+        manager.addExpense("2025-01-20", 99.99, "Test expense with all fields",
+                Category.OTHER, Priority.LOW);
 
         System.out.println();
 
         //Method 2: Without priority (defaults to MEDIUM)
         System.out.println("2️⃣ Adding WITHOUT priority:");
-        manager.addExpense("Test No Priority", 50.00, Category.FOOD, "2025-01-20",
-                "No priority specified");
+        manager.addExpense("2025-01-20", 50.00, "No priority specified",
+                Category.FOOD);
 
         System.out.println();
 
         //Method 3: Without desctiption and priority
         System.out.println("3️⃣ Adding WITHOUT description and priority:");
-        manager.addExpense("Test Minimal", 25.00, Category.TRANSPORT, "2025-01-20");
+        manager.addExpense("2025-01-20", 25.00, Category.TRANSPORT);
 
         System.out.println();
 
-        //Method 4: Varargs - add multiple at once
+        //Method 4: Add multiple with varargs
         System.out.println("4️⃣ Adding MULTIPLE with varargs:");
-        Expense bulk1 = new Expense("Bulk 1", 10, Category.FOOD, "2025-01-20");
-        Expense bulk2 = new Expense("Bulk 2", 20, Category.FOOD, "2025-01-20");
-        Expense bulk3 = new Expense("Bulk 3", 30, Category.FOOD, "2025-01-20");
+        Expense bulk1 = new Expense("2025-01-20", 10, "Bulk 1", Category.FOOD);
+        Expense bulk2 = new Expense("2025-01-20", 20, "Bulk 2", Category.FOOD);
+        Expense bulk3 = new Expense("2025-01-20", 30, "Bulk 3", Category.FOOD);
 
         manager.addExpense(bulk1, bulk2, bulk3);
 
@@ -522,7 +511,7 @@ public class Main {
       ExpenseRepository mockRepo = new MockExpenseRepository();
       BudgetManager testManager = new BudgetManager(mockRepo);
 
-      testManager.addExpense("Test", 50, Category.FOOD, "2025-01-20");
+      testManager.addExpense("2025-01-20", 50, Category.FOOD);
       testManager.displayAllExpenses();
 
       System.out.println("Count: " + testManager.getExpenseCount());  // 2 (fake)
@@ -555,6 +544,47 @@ public class Main {
       manager = new BudgetManager(repository);
       System.out.println("✅ Repository switched!");
   }
+
+  private static void testPolymorphism(){
+      System.out.println("\n=== Testing Polymorphism ===\n");
+
+      //Parent reference -> Child objects (POLYMORPHISM!)
+      Transaction t1 = new Expense("2025-01-20", 100, "Groceries", Category.FOOD);
+      Transaction t2 = new Income("2025-06-19", 3000, "Monthly salary", "Job");
+
+      //Store different types in ONE list!
+      List<Transaction> transactions = new ArrayList<>();
+      transactions.add(t1);
+      transactions.add(t2);
+      transactions.add(new Expense("2025-01-20", 50, "Gas", Category.TRANSPORT));
+      transactions.add(new Income("2025-01-20", 500, "Freelance payment", "Client A"));
+
+      System.out.println("All transactions:");
+      System.out.println("─────────────────────────────────────");
+      for (Transaction t : transactions) {
+          t.displayInfo();  // Calls child version! (polymorphism)
+      }
+      System.out.println("─────────────────────────────────────");
+
+      //Calculate totals
+      double totalExpenses = 0;
+      double totalIncome = 0;
+
+      for(Transaction t : transactions){
+          if(t.getType().equals("EXPENSE")){
+              totalExpenses += t.getAmount();
+          }else if(t.getType().equals("INCOME")){
+              totalIncome += t.getAmount();
+          }
+      }
+
+      System.out.printf("Total Expenses: %.2f PLN%n", totalExpenses);
+      System.out.printf("Total Income: %.2f PLN%n", totalIncome);
+      System.out.printf("Net Balance: %.2f PLN%n", totalIncome - totalExpenses);
+
+      System.out.println("\n✅ Polymorphism test complete!");
+  }
+
 }
 
 
