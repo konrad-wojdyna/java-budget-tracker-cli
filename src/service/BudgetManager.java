@@ -531,7 +531,60 @@ public class BudgetManager {
         }
 
         System.out.println("───────────────────────────────────────");
+    }
 
+    /**
+     * Get expenses by month
+     *
+     * @return map expenses by month
+     */
+    public Map<String, List<Expense>> getExpensesByMonth(String month){
+        Map<String, List<Expense>> expensesByMonth = new HashMap<>();
+
+        List<Expense> allExpenses = repository.findAll();
+
+        for(Expense expense : allExpenses){
+            String date = expense.getDate();
+
+            if(date.startsWith(month)){
+                List<Expense> expensesOnDate = expensesByMonth.getOrDefault(date, new ArrayList<>());
+                expensesOnDate.add(expense);
+
+                expensesByMonth.put(date, expensesOnDate);
+            }
+        }
+
+            System.out.println("Expenses in " + month + " grouped by date: ");
+        for(Map.Entry<String, List<Expense>> entry : expensesByMonth.entrySet()){
+            System.out.println(entry.getKey());
+            for(int i=0; i<entry.getValue().size(); i++){
+                System.out.print((i+1) + ". ");
+                entry.getValue().get(i).displayInfo();
+            }
+        }
+
+        return expensesByMonth;
+    }
+
+    /**
+     * Finds category with most expenses (by count).
+     *
+     * @return most popular category, or null if no expenses
+     */
+    public Category findMostPopularCategory(){
+        Map<Category, Integer> counts = getExpenseCountByCategory();
+
+        Category mostPopular =null;
+        int maxCount = 0;
+
+        for(Map.Entry<Category, Integer> entry : counts.entrySet()){
+            if(entry.getValue() > maxCount){
+                maxCount = entry.getValue();
+                mostPopular = entry.getKey();
+            }
+        }
+
+        return  mostPopular;
     }
 
 

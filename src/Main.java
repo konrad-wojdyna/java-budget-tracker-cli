@@ -122,11 +122,15 @@ public class Main {
                    break;
 
                case 18:
+                   manager.getExpensesByMonth("2025-01");
+                   break;
+
+               case 19:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-17.");
+                   System.out.println("Invalid choice! Please enter 1-19.");
                    break;
            }
 
@@ -145,7 +149,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-17): ");
+        System.out.println("Enter choice (1-19): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -163,7 +167,8 @@ public class Main {
         System.out.println("15. 🧪 Test Polymorphism (Income + Expense)");
         System.out.println("16. 📊 Advanced Statistics (HashMap)");
         System.out.println("17. 🚪 Test HashMap Performance");
-        System.out.println("18. 🚪 Exit");
+        System.out.println("18. 📋 Test month grouping and most popular Category");
+        System.out.println("19. 🚪 Exit");
 
     }
 
@@ -630,6 +635,49 @@ public class Main {
 
       System.out.println("\n✅ HashMap is significantly faster!");
       System.out.println("With 1000s of expenses, difference would be HUGE!");
+
+  }
+
+    /**
+     * Test month grouping and most popular category
+     */
+  private static void testMonthGroupingAndPopular(){
+      System.out.println("\n=== Most Grouping & Popular Category ===\n");
+
+      //Add test data
+      manager.addExpense("2025-01-15", 50, "Lunch", Category.FOOD);
+      manager.addExpense("2025-01-15", 30, "Dinner", Category.FOOD);
+      manager.addExpense("2025-01-20", 100, "Groceries", Category.FOOD);
+      manager.addExpense("2025-01-20", 20, "Bus", Category.TRANSPORT);
+      manager.addExpense("2025-02-05", 40, "Movie", Category.ENTERTAINMENT);
+
+      // Test 1: Most popular category
+      Category popular = manager.findMostPopularCategory();
+      if (popular != null) {
+          Map<Category, Integer> counts = manager.getExpenseCountByCategory();
+          System.out.println("Most popular category: " + popular.getLabel() +
+                  " (" + counts.get(popular) + " expenses)");
+      }
+
+      System.out.println();
+
+      // Test 2: Expenses by month
+      Map<String, List<Expense>> janExpenses = manager.getExpensesByMonth("2025-01");
+
+      System.out.println("Expenses in 2025-01 grouped by date:");
+      System.out.println("───────────────────────────────────────");
+
+      for (Map.Entry<String, List<Expense>> entry : janExpenses.entrySet()) {
+          System.out.println("\n" + entry.getKey() + ":");
+          List<Expense> expenses = entry.getValue();
+          for (int i = 0; i < expenses.size(); i++) {
+              System.out.print("  " + (i + 1) + ". ");
+              expenses.get(i).displayInfo();
+          }
+      }
+
+      System.out.println("\n───────────────────────────────────────");
+      System.out.println("✅ Tests complete!");
 
   }
 
