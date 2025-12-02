@@ -4,10 +4,7 @@ import repository.InMemoryExpenseRepository;
 import repository.MockExpenseRepository;
 import service.BudgetManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Budget Tracker CLI - Main Entry Point
@@ -117,11 +114,19 @@ public class Main {
                    break;
 
                case 16:
+                   manager.displayAdvancedStatistics();
+                   break;
+
+               case 17:
+                   testHashMapPerformance();
+                   break;
+
+               case 18:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-16.");
+                   System.out.println("Invalid choice! Please enter 1-17.");
                    break;
            }
 
@@ -140,7 +145,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-16): ");
+        System.out.println("Enter choice (1-17): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -156,7 +161,9 @@ public class Main {
         System.out.println("13. 🧪 Test Mock Repository");
         System.out.println("14. 🚪 Switch repository");
         System.out.println("15. 🧪 Test Polymorphism (Income + Expense)");
-        System.out.println("16. 🚪 Exit");
+        System.out.println("16. 📊 Advanced Statistics (HashMap)");
+        System.out.println("17. 🚪 Test HashMap Performance");
+        System.out.println("18. 🚪 Exit");
 
     }
 
@@ -584,6 +591,46 @@ public class Main {
       System.out.printf("Net Balance: %.2f PLN%n", totalIncome - totalExpenses);
 
       System.out.println("\n✅ Polymorphism test complete!");
+  }
+
+    /**
+     * Demonstrate HashMap performance vs multiple ArrayList loops.
+     */
+  private static void testHashMapPerformance(){
+      System.out.println("\n=== HashMap Performance Test ===\n");
+
+      for(int i=0; i< 100; i++){
+          Category randomCategory = Category.values()[i % Category.values().length];
+          manager.addExpense("2025-01-20", Math.random() * 100,
+                  "Total expense " + i, randomCategory);
+      }
+
+      System.out.println("Added 100 test expenses.\n");
+
+      //Method 1: OLD WAY - Multiple lpps (one per category)
+      long startOld = System.nanoTime();
+      for(Category category : Category.values()){
+          double total = manager.getTotalByCategory(category);
+      }
+      long endOld = System.nanoTime();
+      long timeOld = endOld - startOld;
+
+      //Method 2: NEW WAY - HashMap (single loop for all categories)
+      long startNew = System.nanoTime();
+      Map<Category, Double > totals = manager.calculateTotalsByCategory();
+      long endNew = System.nanoTime();
+      long timeNew = endNew - startNew;
+
+      System.out.println("Performance Comparison:");
+      System.out.println("───────────────────────────────────────");
+      System.out.printf("OLD (multiple loops): %d ns%n", timeOld);
+      System.out.printf("NEW (HashMap): %d ns%n", timeNew);
+      System.out.printf("Speedup: %.1fx faster!%n", (double) timeOld / timeNew);
+      System.out.println("───────────────────────────────────────");
+
+      System.out.println("\n✅ HashMap is significantly faster!");
+      System.out.println("With 1000s of expenses, difference would be HUGE!");
+
   }
 
 }
