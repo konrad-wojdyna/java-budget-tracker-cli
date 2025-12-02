@@ -5,7 +5,7 @@ import model.Expense;
 import model.Priority;
 import repository.ExpenseRepository;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Manages a collection of expenses with CRUD operations.
@@ -20,7 +20,7 @@ import java.util.List;
  *
  *
  * @author Konrad Wojdyna
- * @version 0.5.0
+ * @version 0.6.0
  */
 
 public class BudgetManager {
@@ -344,4 +344,196 @@ public class BudgetManager {
 
         addExpense(presets);
     }
+
+    /**
+     * Calculates total spending for each category using HashMap.
+     * More efficient than multiple loops - 0(n) instead of 0(n*m).
+     *
+     * @return map of category to total amount
+     */
+    public Map<Category, Double> calculateTotalsByCategory(){
+        Map<Category, Double> totals = new HashMap<>();
+
+        //Initialize all categories with 0.0
+        for(Category category : Category.values()){
+            totals.put(category, 0.0);
+        }
+
+        //Sum expenses for each category (single loop)
+        List<Expense> allExpenses = repository.findAll();
+        for(Expense expense : allExpenses){
+            Category cat = expense.getCategory();
+            double currentTotal = totals.get(cat);
+            totals.put(cat, currentTotal + expense.getAmount());
+        }
+
+        return totals;
+    }
+
+    /**
+     * Gets count of expenses per category.
+     *
+     * @return map of category to expense count
+     */
+    public Map<Category, Integer> getExpenseCountByCategory(){
+        Map<Category, Integer> counts = new HashMap<>();
+
+        //Initialize with 0
+        for(Category category : Category.values()){
+            counts.put(category, 0);
+        }
+
+        //Count expenses
+        List<Expense> expenses = repository.findAll();
+        for(Expense expense : expenses){
+            Category cat = expense.getCategory();
+            int currentCount = counts.get(cat);
+            counts.put(cat, currentCount + 1);
+        }
+
+        return counts;
+    }
+
+    /**
+     * Gets count of expenses per priority level.
+     *
+     * @return map of priority to expense count
+     */
+    public Map<Priority, Integer> getExpenseCountByPriority(){
+        Map<Priority, Integer> counts = new HashMap<>();
+
+        //Initialize
+        for(Priority priority : Priority.values()){
+            counts.put(priority, 0);
+        }
+
+        //Count
+        List<Expense> allExpenses = repository.findAll();
+        for(Expense expense : allExpenses){
+            Priority p = expense.getPriority();
+            counts.put(p, counts.get(p) + 1);
+        }
+
+        return  counts;
+    }
+
+    /**
+     * Get all unique dates that have expenses.
+     *
+     * @return set of unique dates
+     */
+    public Set<String> getUniqueDates(){
+        Set<String> dates = new HashSet<>();
+
+        List<Expense> allExpenses = repository.findAll();
+        for(Expense expense : allExpenses){
+            dates.add(expense.getDate());
+        }
+
+        return  dates;
+    }
+
+    /**
+     * Get total spending per date.
+     *
+     * @return map of date to total amount
+     */
+    public Map<String, Double> getTotalsByDate(){
+       Map<String, Double> totals = new HashMap<>();
+
+       List<Expense> allExpenses = repository.findAll();
+       for(Expense expense : allExpenses){
+           String date = expense.getDate();
+           double currentTotal = totals.getOrDefault(date, 0.0);
+           totals.put(date, currentTotal + expense.getAmount());
+       }
+
+       return totals;
+    }
+
+    public void displayAdvancedStatistics(){
+        System.out.println("Advanced Budget Statistics");
+
+        List<Expense> allExpenses = repository.findAll();
+
+        if(allExpenses.isEmpty()){
+            System.out.println("No expenses to analyze.");
+            return;
+        }
+
+        //Overall totals
+        double grandTotal = calculateTotal();
+        System.out.println("\n📊 Overall Statistics:");
+        System.out.println("───────────────────────────────────────");
+        System.out.printf("Total Expenses: %d%n", allExpenses.size());
+        System.out.printf("Total Amount: %.2f PLN%n", grandTotal);
+        System.out.printf("Average Expense: %.2f PLN%n", grandTotal / allExpenses.size());
+
+        //Category breakdown
+        System.out.println("\n📂 By Category:");
+        System.out.println("───────────────────────────────────────");
+
+        Map<Category, Double> categoryTotals = calculateTotalsByCategory();
+        Map<Category, Integer> categoryCounts = getExpenseCountByCategory();
+
+        for(Category category : Category.values()){
+            int count = categoryCounts.get(category);
+            double total = categoryTotals.get(category);
+
+            if(count > 0){
+                double percentage = (total / grandTotal) * 100;
+                double average = total / count;
+
+                System.out.printf("%s%n", category.getLabel());
+                System.out.printf("  Count: %d | Total: %.2f PLN (%.1f%%)%n",
+                        count, total, percentage);
+                System.out.printf("  Average: %.2f PLN%n", average);
+            }
+        }
+
+        // Priority breakdown
+        System.out.println("\n⚡ By Priority:");
+        System.out.println("───────────────────────────────────────");
+
+        Map<Priority, Integer> priorityCounts = getExpenseCountByPriority();
+
+        for (Priority priority : Priority.values()) {
+            int count = priorityCounts.get(priority);
+            if (count > 0) {
+                double percentage = (count * 100.0) / allExpenses.size();
+                System.out.printf("%s: %d expenses (%.1f%%)%n",
+                        priority, count, percentage);
+            }
+        }
+
+        // Date analysis
+        System.out.println("\n📅 Date Analysis:");
+        System.out.println("───────────────────────────────────────");
+
+        Set<String> uniqueDates = getUniqueDates();
+        System.out.printf("Unique dates with expenses: %d%n", uniqueDates.size());
+
+        Map<String, Double> dateTotals = getTotalsByDate();
+
+        // Find most expensive date
+        String maxDate = null;
+        double maxAmount = 0;
+
+        for (Map.Entry<String, Double> entry : dateTotals.entrySet()) {
+            if (entry.getValue() > maxAmount) {
+                maxAmount = entry.getValue();
+                maxDate = entry.getKey();
+            }
+        }
+
+        if (maxDate != null) {
+            System.out.printf("Most expensive date: %s (%.2f PLN)%n", maxDate, maxAmount);
+        }
+
+        System.out.println("───────────────────────────────────────");
+
+    }
+
+
+
 }
