@@ -1,5 +1,6 @@
 package repository;
 
+import exception.ExpenseNotFoundException;
 import model.Category;
 import model.Expense;
 import model.Priority;
@@ -47,7 +48,7 @@ public interface ExpenseRepository {
      * @param index the index (0-based)
      * @return the expense at that index
      */
-    Expense findById(int index);
+    Expense findById(int index) throws ExpenseNotFoundException;
 
     /**
      * Finds all expenses in specified category.
@@ -80,7 +81,7 @@ public interface ExpenseRepository {
      * @param index the index (0-based)
      * @throws IndexOutOfBoundsException if index invalid
      */
-    void delete(int index);
+    void delete(int index) throws ExpenseNotFoundException;
 
     /**
      * Deletes all expenses from repository.
