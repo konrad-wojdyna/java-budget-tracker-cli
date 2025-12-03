@@ -1,5 +1,7 @@
 package service;
 
+import exception.ExpenseNotFoundException;
+import exception.InvalidExpenseDataException;
 import model.Category;
 import model.Expense;
 import model.Priority;
@@ -243,9 +245,18 @@ public class BudgetManager {
      * @throws IndexOutOfBoundsException if index is invalid
      */
     public void  removeExpense(int index){
+        try{
         Expense expense = repository.findById(index);
         repository.delete(index);
         System.out.println("Removed: " + expense.getDescription());
+
+        }catch (ExpenseNotFoundException e){
+            System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("Failed to remove expense", e);
+        }catch (InvalidExpenseDataException e){
+            System.out.println("Invalid data: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -587,6 +598,18 @@ public class BudgetManager {
         return  mostPopular;
     }
 
+    public Expense getExpenseByIndex(int index) throws ExpenseNotFoundException{
+        if(index < 0){
+            throw new InvalidExpenseDataException("Index cannot be negative", "index", index);
+        }
+
+        try{
+            return  repository.findById(index);
+        }catch (ExpenseNotFoundException e){
+            System.out.println("Expense not found: " + e.getMessage());
+            throw e;
+        }
+    }
 
 
 }
