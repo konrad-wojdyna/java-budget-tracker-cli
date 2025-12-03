@@ -1,3 +1,4 @@
+import exception.AmountTooLargeException;
 import exception.ExpenseNotFoundException;
 import exception.InvalidExpenseDataException;
 import model.*;
@@ -757,6 +758,15 @@ public class Main {
           manager.findByCategory(null);
           System.out.println("❌ Should have thrown exception!");
       } catch (InvalidExpenseDataException e) {
+          System.out.println("✅ Caught: " + e.getMessage());
+      }
+
+      //Test 5: Amount too large
+      System.out.println("Test 4: Adding expense with amount > 10000");
+      try {
+          manager.addExpense("2025-01-20", 15000, "Expensive car", Category.TRANSPORT);
+          System.out.println("❌ Should have thrown AmountTooLargeException!");
+      } catch (AmountTooLargeException e) {
           System.out.println("✅ Caught: " + e.getMessage());
       }
 
