@@ -10,7 +10,7 @@ public class AmountTooLargeException extends RuntimeException {
     }
 
     public AmountTooLargeException(String message, double amount, double maxAllowed){
-        super(message);
+        super("Amount "  + amount + " exceeds maximum " + maxAllowed);
         this.amount = amount;
         this.maxAllowed = maxAllowed;
     }
@@ -18,6 +18,6 @@ public class AmountTooLargeException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "Amount " + amount + " exceeds maximum " + maxAllowed;
+        return super.getMessage() + ": Amount " + amount + " exceeds maximum " + maxAllowed;
     }
 }
