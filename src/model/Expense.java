@@ -1,5 +1,7 @@
 package model;
 
+import exception.AmountTooLargeException;
+
 /**
  * Represents an expense transaction.
  *
@@ -34,6 +36,10 @@ public class Expense extends Transaction {
 
         if(priority == null){
             throw new IllegalArgumentException("Priority cannot be null");
+        }
+
+        if(amount > 10000){
+            throw new AmountTooLargeException("Amount exceed", amount, 10000);
         }
 
         this.category = category;

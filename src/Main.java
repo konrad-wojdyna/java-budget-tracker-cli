@@ -1,3 +1,5 @@
+import exception.ExpenseNotFoundException;
+import exception.InvalidExpenseDataException;
 import model.*;
 import repository.ExpenseRepository;
 import repository.InMemoryExpenseRepository;
@@ -126,11 +128,15 @@ public class Main {
                    break;
 
                case 19:
+                   testExceptionHandling();
+                   break;
+
+               case 20:
                    System.out.println("Exiting... Goodbye!");
                    isRunning = false;
                    break;
                default:
-                   System.out.println("Invalid choice! Please enter 1-19.");
+                   System.out.println("Invalid choice! Please enter 1-20.");
                    break;
            }
 
@@ -149,7 +155,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-19): ");
+        System.out.println("Enter choice (1-20): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -168,7 +174,8 @@ public class Main {
         System.out.println("16. 📊 Advanced Statistics (HashMap)");
         System.out.println("17. 🚪 Test HashMap Performance");
         System.out.println("18. 📋 Test month grouping and most popular Category");
-        System.out.println("19. 🚪 Exit");
+        System.out.println("19. 📋 Test exception handling");
+        System.out.println("20. 🚪 Exit");
 
     }
 
@@ -178,87 +185,78 @@ public class Main {
     private static void addExpense(){
         System.out.println("=== Add New Expense ===");
 
-        //Name
-        String date;
-        while (true){
-            System.out.print("Enter date (YYYY-MM-DD): ");
-        date = scanner.nextLine();
-
-        if(date.trim().isEmpty()){
-            System.out.println("Date cannot be empty! Try again.");
-        }else {
-            break;
-         }
-        }
-
-        //Amount
-        double amount;
-        while (true){
-        System.out.println("Enter amount (PLN): ");
-        amount = scanner.nextDouble();
-        scanner.nextLine();
-
-        if(amount <= 0){
-            System.out.println("Amount must be positive! Try again.");
-        }else {
-            break;
-         }
-        }
-
-        //Description (optional)
-        System.out.print("Enter description (optional, press Enter to skip): ");
-        String description = scanner.nextLine();
-
-
-        //Category
-        Category category;
-        while (true) {
-            System.out.println("\n📂 Select category:");
-            Category[] categories = Category.values();
-
-            for (int i = 0; i < categories.length; i++) {
-                System.out.println(" " + (i + 1) + ". " + categories[i].getLabel());
-            }
-
-            System.out.println("Enter choice (1-" + categories.length + "): ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            if (choice >= 1 && choice <= categories.length) {
-                category = categories[choice - 1];
-                break;
-            } else {
-                System.out.println("Invalid choice! Try again.");
-            }
-        }
-
-        //Priority - Select from enum
-        Priority priority;
-        while (true){
-            System.out.println("\n Select priority:");
-            Priority[] priorities = Priority.values();
-
-            for(int i=0; i<priorities.length; i++){
-                System.out.println(" " + (i + 1) + ". " + priorities[i]);
-            }
-
-            System.out.println("Enter choice (1-" + priorities.length + "): ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            if(choice >= 1 && choice <= priorities.length){
-                priority = priorities[choice - 1];
-                break;
-            }else {
-                System.out.println("Invalid choice! Try again.");
-            }
-        }
-
         try{
+            //Name
+            String date;
+            while (true){
+                System.out.print("Enter date (YYYY-MM-DD): ");
+                date = scanner.nextLine();
+
+                if(date.trim().isEmpty()){
+                    System.out.println("Date cannot be empty! Try again.");
+                }else if(!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    System.out.println("❌ Invalid format! Use YYYY-MM-DD");
+                }else {
+                    break;
+                }
+            }
+
+            //Amount (using safe method)
+            double amount = readDouble("Enter amount (PLN): ");
+
+            //Description
+            System.out.print("Enter description: ");
+            String description = scanner.nextLine();
+
+            //Category
+            Category category;
+            while (true) {
+                System.out.println("\n📂 Select category:");
+                Category[] categories = Category.values();
+
+                for (int i = 0; i < categories.length; i++) {
+                    System.out.println(" " + (i + 1) + ". " + categories[i].getLabel());
+                }
+
+                int choice = readInt("Enter choice (1-" + categories.length + "): ");
+
+                if (choice >= 1 && choice <= categories.length) {
+                    category = categories[choice - 1];
+                    break;
+                } else {
+                    System.out.println("Invalid choice! Try again.");
+                }
+            }
+
+            //Priority - Select from enum
+            Priority priority;
+            while (true){
+                System.out.println("\n Select priority:");
+                Priority[] priorities = Priority.values();
+
+                for(int i=0; i<priorities.length; i++){
+                    System.out.println(" " + (i + 1) + ". " + priorities[i]);
+                }
+
+                int choice = readInt("Enter choice (1-" + priorities.length + "):");
+
+                if(choice >= 1 && choice <= priorities.length){
+                    priority = priorities[choice - 1];
+                    break;
+                }else {
+                    System.out.println("Invalid choice! Try again.");
+                }
+            }
+
             Expense expense = new Expense(date, amount, description, category, priority);
             manager.addExpense(expense);
-        }catch (IllegalArgumentException e){
-            System.out.println("Error: " + e.getMessage());
+
+        }catch (InvalidExpenseDataException e){
+            System.out.println("❌ Validation error: " + e.getMessage());
+            System.out.println("   Please try again.");
+        }catch (Exception e){
+            System.out.println("❌ Unexpected error: " + e.getMessage());
+            System.out.println("   Please report this bug.");
         }
     }
 
@@ -334,14 +332,12 @@ public class Main {
         //Show all expenses first
         manager.displayAllExpenses();
 
-        System.out.println("\nEnter expense number to remove (1-" + manager.getExpenseCount() + "): ");
-        int number = scanner.nextInt();
-        scanner.nextLine();
-
         try{
+        int number = readInt("\nEnter expense number to remove (1-" + manager.getExpenseCount() + "): ");
+
             manager.removeExpense(number - 1);
-        }catch (IllegalArgumentException e){
-            System.out.println("Error: " + e.getMessage());
+        } catch (Exception e){
+            System.out.println("❌ Error removing expense: " + e.getMessage());
         }
     }
 
@@ -678,6 +674,93 @@ public class Main {
 
       System.out.println("\n───────────────────────────────────────");
       System.out.println("✅ Tests complete!");
+
+  }
+
+    /**
+     * Safely reads integer from user with exception handling.
+     */
+  private static int readInt(String prompt){
+      while (true){
+          try{
+              System.out.print(prompt);
+              int value = scanner.nextInt();
+              scanner.nextLine();
+              return  value;
+          }catch (InputMismatchException e){
+              System.out.println("❌ Invalid input! Please enter a number.");
+              scanner.nextLine();  // Clear invalid input
+          }
+      }
+  }
+
+  private static double readDouble(String prompt){
+      while (true){
+          try{
+              System.out.print(prompt);
+              double value = scanner.nextDouble();
+              scanner.nextLine();
+
+              if(value < 0){
+                  System.out.println("❌ Amount cannot be negative!");
+                  continue;
+              }
+
+              return value;
+          }catch (InputMismatchException e){
+              System.out.println("Invalid input! Please enter a number");
+              scanner.nextLine();
+          }
+      }
+  }
+
+    /**
+     * Tests various exception scenarios.
+     */
+  private static void testExceptionHandling(){
+      System.out.println("\n=== Testing Exception Handling ===\n");
+
+      //Test 1: Null expense
+      System.out.println("Test 1: Adding null expense");
+      try{
+         manager.addExpense((Expense) null);
+          System.out.println("❌ Should have thrown exception!");
+      }catch (InvalidExpenseDataException e){
+          System.out.println("✅ Caught: " + e.getMessage());
+      }
+
+      // Test 2: Invalid index
+      System.out.println("Test 2: Finding expense at invalid index");
+      try {
+          manager.getExpenseByIndex(999);
+          System.out.println("❌ Should have thrown exception!");
+      } catch (ExpenseNotFoundException e) {
+          System.out.println("✅ Caught: " + e.getMessage());
+      }
+
+      System.out.println();
+
+      // Test 3: Negative index
+      System.out.println("Test 3: Negative index");
+      try {
+          manager.getExpenseByIndex(-5);
+          System.out.println("❌ Should have thrown exception!");
+      } catch (InvalidExpenseDataException e) {
+          System.out.println("✅ Caught: " + e.getMessage());
+      }
+
+      System.out.println();
+
+      // Test 4: Null category
+      System.out.println("Test 4: Finding by null category");
+      try {
+          manager.findByCategory(null);
+          System.out.println("❌ Should have thrown exception!");
+      } catch (InvalidExpenseDataException e) {
+          System.out.println("✅ Caught: " + e.getMessage());
+      }
+
+      System.out.println("\n✅ All exception tests passed!");
 
   }
 
