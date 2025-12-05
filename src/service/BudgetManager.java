@@ -7,6 +7,9 @@ import model.Expense;
 import model.Priority;
 import repository.ExpenseRepository;
 
+import java.io.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 
 /**
@@ -22,7 +25,7 @@ import java.util.*;
  *
  *
  * @author Konrad Wojdyna
- * @version 0.6.0
+ * @version 0.7.0
  */
 
 public class BudgetManager {
@@ -611,5 +614,115 @@ public class BudgetManager {
         }
     }
 
+    /**
+     * Saves all expenses to CSV file.
+     *
+     * @param fileName path to save file
+     * @throws IOException if file write fails
+     */
+    public void saveToFile(String fileName) throws IOException {
+
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))){
+
+            writer.write("date,amount,description,category,priority");
+            writer.newLine();
+
+            List<Expense> allExpenses = repository.findAll();
+            for(Expense expense : allExpenses){
+
+                String desc = expense.getDescription();
+
+                if(desc.contains(",") || desc.contains("\"")){
+                    desc = "\"" + desc.replace("\"", "\"\"") + "\"";
+                }
+
+                String line = String.format("%s,%s,%s,%s,%s",
+                        expense.getDate(),
+                        expense.getAmount(),
+                        desc,
+                        expense.getCategory().name(),  // FOOD, TRANSPORT, etc.
+                        expense.getPriority().name()); // LOW, MEDIUM, HIGH
+
+                writer.write(line);
+                writer.newLine();
+            }
+
+            System.out.println("✓ Saved " + allExpenses.size() +
+                    " expenses to " + fileName);
+        }
+    }
+
+
+    /**
+     * Loads expenses from CSV file.
+     *
+     * @param filename path to load file
+     * @throws IOException if file read fails
+     */
+    public void loadFromFile(String filename) throws IOException {
+        File file = new File(filename);
+
+        if (!file.exists()) {
+            System.out.println("⚠️  File not found: " + filename);
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+
+            // Skip header line
+            String header = reader.readLine();
+
+            int loadedCount = 0;
+            int errorCount = 0;
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                try {
+
+                    String regex = ",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
+
+                    // Parse CSV line
+                    String[] parts = line.split(regex);
+
+
+                    if (parts.length != 5) {
+                        System.out.println("⚠️  Skipping invalid line: " + line);
+                        errorCount++;
+                        continue;
+                    }
+                    String date = parts[0];
+                    double amount = Double.parseDouble(parts[1]);
+                    if(parts[2].startsWith("\"")){
+                        parts[2] = parts[2].substring(1, parts[2].length() - 1);
+                    }
+                    String description = parts[2];
+                    Category category = Category.valueOf(parts[3]);
+                    Priority priority = Priority.valueOf(parts[4]);
+
+                    // Create and add expense
+                    Expense expense = new Expense(date, amount, description,
+                            category, priority);
+                    repository.save(expense);
+                    loadedCount++;
+
+
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️  Invalid number in line: " + line);
+                    errorCount++;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("⚠️  Invalid category/priority in line: " + line);
+                    errorCount++;
+                } catch (Exception e) {
+                    System.out.println("⚠️  Error parsing line: " + line);
+                    errorCount++;
+                }
+            }
+
+            System.out.println("✓ Loaded " + loadedCount + " expenses from " + filename);
+            if (errorCount > 0) {
+                System.out.println("⚠️  " + errorCount + " lines had errors");
+            }
+        }
+    }
 
 }

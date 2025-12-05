@@ -7,6 +7,8 @@ import repository.InMemoryExpenseRepository;
 import repository.MockExpenseRepository;
 import service.BudgetManager;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -31,7 +33,23 @@ public class Main {
 
     public static void main(String[] args){
 
+
         System.out.println("Java Budget Tracker CLI Interactive");
+
+        // Auto-load check
+        File savedFile = new File("expenses.csv");
+        if (savedFile.exists()) {
+            System.out.print("Found saved expenses. Load them? (yes/no): ");
+            String answer = scanner.nextLine();
+
+            if (answer.equalsIgnoreCase("yes")) {
+                try {
+                    manager.loadFromFile("expenses.csv");
+                } catch (IOException e) {
+                    System.out.println("❌ Error loading: " + e.getMessage());
+                }
+            }
+        }
 
         runMenu();
 
@@ -133,11 +151,20 @@ public class Main {
                    break;
 
                case 20:
-                   System.out.println("Exiting... Goodbye!");
+                   saveExpensesToFile();
+                   break;
+
+               case 21:
+                   loadExpensesFromFile();
+                   break;
+
+               case 22:
+                   exitWithSave();
                    isRunning = false;
                    break;
+
                default:
-                   System.out.println("Invalid choice! Please enter 1-20.");
+                   System.out.println("Invalid choice! Please enter 1-22.");
                    break;
            }
 
@@ -156,7 +183,7 @@ public class Main {
         double total = manager.calculateTotal();
         System.out.println("📊 Current: " + count + " expenses | " + String.format("%.2f PLN", total));
 
-        System.out.println("Enter choice (1-20): ");
+        System.out.println("Enter choice (1-22): ");
         System.out.println("1. 📝 Add Expense");
         System.out.println("2. 📋 Display All Expenses");
         System.out.println("3. 📊 Show Statistics");
@@ -176,7 +203,9 @@ public class Main {
         System.out.println("17. 🚪 Test HashMap Performance");
         System.out.println("18. 📋 Test month grouping and most popular Category");
         System.out.println("19. 📋 Test exception handling");
-        System.out.println("20. 🚪 Exit");
+        System.out.println("20. \uD83D\uDCBE Save to File");
+        System.out.println("21. \uD83D\uDCC1 Load expenses from file");
+        System.out.println("22. 🚪 Exit");
 
     }
 
@@ -771,8 +800,57 @@ public class Main {
       }
 
       System.out.println("\n✅ All exception tests passed!");
-
   }
+
+    /**
+     * Saves expenses to CSV file.
+     */
+    private static void saveExpensesToFile(){
+        System.out.println("Enter filename to save (e.g., expenses.csv): ");
+        String fileName = scanner.nextLine();
+
+        try{
+            manager.saveToFile(fileName);
+        }catch (IOException e){
+            System.out.println("❌ Error saving file: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Loads expenses from CSV file.
+     */
+    private static void loadExpensesFromFile(){
+        System.out.print("Enter filename to load (e.g., expenses.csv): ");
+        String filename = scanner.nextLine();
+
+        try{
+            manager.loadFromFile(filename);
+        } catch (IOException e) {
+            System.out.println("❌ Error loading file: " + e.getMessage());
+        }
+    }
+
+    private static void exitWithSave(){
+
+        System.out.println("Save before exit? (yes/no)");
+        String answer;
+
+        while (true){
+            answer = scanner.nextLine();
+            if(!answer.trim().equals("yes") && !answer.trim().equals("no")){
+                System.out.println("Provide correct: yes or no");
+            }
+            else{
+                break;
+            }
+        }
+
+        if (answer.equals("no")){
+            System.out.println("Exiting... Goodbye!");
+        }else if(answer.equals("yes")){
+            saveExpensesToFile();
+        }
+    }
 
 }
 
